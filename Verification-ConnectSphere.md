@@ -90,7 +90,7 @@ Once everything is installed, you can generate your own proofs:
 4. Open a terminal in the `sp1_connectsphere` directory.  
 5. Run the provided command. Example:
    ```bash
-   cargo run --release -p proof-of-secret-script -- --n 791918400 --a 282828 --b 2800 && cargo run --release -p proof-converter-script
+   cargo run --release -p proof-of-secret-script -- --n 791918400 --a 12312 --b 22312321 && cargo run --release -p proof-converter-script
    ```
 6. Once the process completes, the terminal will output:
    - `pvk`
