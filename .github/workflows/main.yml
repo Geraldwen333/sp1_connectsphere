@@ -24,35 +24,35 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Langkah 2: Instal Rust
+      # Langkah 2: Instal Rust dan siapkan PATH
       - name: Install Rust
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      # --- INI ADALAH PERBAIKAN FINAL ---
-      # Langkah 3: Instal SP1 Toolchain dengan Memanggil Langsung
-      - name: Install SP1 Toolchain (Direct Call Method)
-        # Gunakan 'bash' shell secara eksplisit
+      # --- PERBAIKAN DENGAN MEMISAHKAN LANGKAH ---
+
+      # Langkah 3: Instal skrip sp1up
+      # Langkah ini HANYA mengunduh dan menempatkan sp1up ke dalam PATH.
+      - name: Install sp1up Script
+        run: curl -L https://sp1up.succinct.xyz | bash
+
+      # Langkah 4: Jalankan sp1up untuk menginstal toolchain
+      # Karena ini adalah LANGKAH BARU, PATH dari langkah sebelumnya sudah diperbarui
+      # dan perintah 'sp1up' sekarang dapat ditemukan.
+      - name: Run sp1up to Install Toolchain
         shell: bash
         run: |
-          # Tambahkan direktori bin Cargo ke PATH sesi ini secara eksplisit
-          source "$HOME/.cargo/env"
-          
-          # Jalankan installer resmi sp1up
-          curl -L https://sp1up.succinct.xyz | bash
-          
-          # Panggil sp1up menggunakan path absolutnya, ini MENGHINDARI masalah PATH
-          echo "Running sp1up via absolute path..."
-          source /home/runner/.bashrc
-          
-          echo "Running sp1up via absolute path..."
-          $HOME/.cargo/bin/sp1up
+          # Kita perlu source .bashrc karena installer sp1up memodifikasinya
+          source "$HOME/.bashrc"
+          sp1up
           
           # Verifikasi instalasi untuk memastikan semuanya siap
           echo "Verifying installations..."
-          $HOME/.cargo/bin/cargo prove --version
-          $HOME/.cargo/bin/cargo +succinct --version
+          "$HOME/.cargo/bin/cargo" prove --version
+          "$HOME/.cargo/bin/cargo" +succinct --version
 
-      # Langkah 4: Hitung nilai 'n' dari input rahasia pengguna
+      # Langkah 5: Hitung nilai 'n' dari input rahasia pengguna
       - name: Calculate N
         id: calculate_n
         shell: bash
@@ -62,23 +62,19 @@ jobs:
           n=$((a * b))
           echo "n_value=$n" >> $GITHUB_OUTPUT
 
-      # Langkah 5: Jalankan Prover Script dengan input dari pengguna
+      # Langkah 6: Jalankan Prover Script dengan input dari pengguna
       - name: Run ZK Prover
         shell: bash
         run: |
-          # Pastikan PATH sudah benar sebelum menjalankan cargo
           source "$HOME/.cargo/env"
-          
           echo "Starting ZK proof generation for n=${{ steps.calculate_n.outputs.n_value }}..."
           cargo run --release -p proof-of-secret-script -- --n ${{ steps.calculate_n.outputs.n_value }} --a ${{ inputs.secret_a }} --b ${{ inputs.secret_b }}
         timeout-minutes: 30
 
-      # Langkah 6: Jalankan Converter Script untuk mendapatkan output final
+      # Langkah 7: Jalankan Converter Script untuk mendapatkan output final
       - name: Convert Proof to Sui Arguments
         shell: bash
         run: |
-          # Pastikan PATH sudah benar sebelum menjalankan cargo
           source "$HOME/.cargo/env"
-          
           echo "Converting proof and printing arguments..."
           cargo run --release -p proof-converter-script
