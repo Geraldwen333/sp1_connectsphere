@@ -42,6 +42,9 @@ jobs:
           
           # Panggil sp1up menggunakan path absolutnya, ini MENGHINDARI masalah PATH
           echo "Running sp1up via absolute path..."
+          source /home/runner/.bashrc
+          
+          echo "Running sp1up via absolute path..."
           $HOME/.cargo/bin/sp1up
           
           # Verifikasi instalasi untuk memastikan semuanya siap
