@@ -21,39 +21,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Langkah 2: Siapkan environment Rust dan tambahkan bin ke PATH
+      # Langkah 2: Siapkan environment Rust
       - name: Install Rust
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      # --- PERBAIKAN: Proses instalasi dipecah menjadi beberapa langkah ---
-
-      # Langkah 3: Install SP1 CLI (termasuk sp1up dan cargo-prove)
+      # Langkah 3: Install SP1 CLI Tools (HANYA MENGINSTALL, TIDAK MENJALANKAN)
       - name: Install SP1 CLI Tools
         run: |
           echo "Cloning SP1 repository and installing CLI..."
           git clone https://github.com/succinctlabs/sp1.git ~/sp1
           cd ~/sp1/crates/cli
           cargo install --path .
-          
-      # Langkah 4: Download dan Link SP1 Toolchain
-      # Karena ini adalah langkah BARU, PATH dari Langkah 2 dijamin sudah diperbarui
-      - name: Download and Link SP1 Toolchain
+      
+      # --- PERBAIKAN TOTAL DI SINI ---
+      # Langkah 4: Download Toolchain Langsung & Link Manual (TANPA sp1up)
+      - name: Download and Link SP1 Toolchain Directly
         run: |
-          echo "Verifying CLI tools are in PATH..."
-          sp1up --version
-          cargo prove --version
-
-          echo "Downloading toolchain via sp1up..."
-          sp1up
-
+          echo "Downloading SP1 toolchain directly from GitHub releases..."
+          # Membuat direktori untuk menyimpan unduhan
+          mkdir -p ~/.sp1/bin
+          cd ~/.sp1/bin
+          
+          # Mengunduh file toolchain menggunakan curl
+          curl -L https://github.com/succinctlabs/sp1/releases/download/v1.0.0/rust-toolchain-x86_64-unknown-linux-gnu.tar.gz -o rust-toolchain.tar.gz
+          
           echo "Manually linking toolchain..."
           mkdir -p ~/.sp1/toolchains/succinct
-          tar -xvf ~/.sp1/rust-toolchain-x86_64-unknown-linux-gnu.tar.gz -C ~/.sp1/toolchains/succinct --strip-components=1
+          tar -xvf rust-toolchain.tar.gz -C ~/.sp1/toolchains/succinct --strip-components=1
           rustup toolchain link succinct ~/.sp1/toolchains/succinct
           
           echo "Toolchain linked successfully."
+          # Kembali ke direktori kerja utama
           cd $GITHUB_WORKSPACE
 
       # Langkah 5: Hitung nilai 'n' dari input rahasia pengguna
@@ -76,4 +76,4 @@ jobs:
       - name: Convert Proof to Sui Arguments
         run: |
           echo "Converting proof and printing arguments..."
-          cargo run --release -p proof-converter-script
+          cargo run --release -p proof-of-secret-script
