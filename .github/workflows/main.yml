@@ -28,29 +28,31 @@ jobs:
       - name: Install Rust
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-      # Langkah 3: Instal SP1 Toolchain (Metode Resmi yang Benar)
-      - name: Install SP1 Toolchain using sp1up
+      # --- INI ADALAH PERBAIKAN FINAL ---
+      # Langkah 3: Instal SP1 Toolchain dengan Memanggil Langsung
+      - name: Install SP1 Toolchain (Direct Call Method)
+        # Gunakan 'bash' shell secara eksplisit
+        shell: bash
         run: |
-          # Tambahkan direktori bin Cargo ke PATH untuk sesi ini
+          # Tambahkan direktori bin Cargo ke PATH sesi ini secara eksplisit
           source "$HOME/.cargo/env"
           
           # Jalankan installer resmi sp1up
           curl -L https://sp1up.succinct.xyz | bash
           
-          # Installer memodifikasi .bashrc, jadi kita source lagi untuk membuat sp1up tersedia
-          source "$HOME/.bashrc"
-          
-          # Jalankan sp1up untuk menginstal toolchain (prover & succinct)
-          sp1up
+          # Panggil sp1up menggunakan path absolutnya, ini MENGHINDARI masalah PATH
+          echo "Running sp1up via absolute path..."
+          $HOME/.cargo/bin/sp1up
           
           # Verifikasi instalasi untuk memastikan semuanya siap
           echo "Verifying installations..."
-          cargo prove --version
-          cargo +succinct --version
-      
+          $HOME/.cargo/bin/cargo prove --version
+          $HOME/.cargo/bin/cargo +succinct --version
+
       # Langkah 4: Hitung nilai 'n' dari input rahasia pengguna
       - name: Calculate N
         id: calculate_n
+        shell: bash
         run: |
           a=${{ inputs.secret_a }}
           b=${{ inputs.secret_b }}
@@ -59,12 +61,10 @@ jobs:
 
       # Langkah 5: Jalankan Prover Script dengan input dari pengguna
       - name: Run ZK Prover
-        # Tambahkan `shell: bash` untuk memastikan perintah source berfungsi dengan benar
         shell: bash
         run: |
           # Pastikan PATH sudah benar sebelum menjalankan cargo
           source "$HOME/.cargo/env"
-          source "$HOME/.bashrc"
           
           echo "Starting ZK proof generation for n=${{ steps.calculate_n.outputs.n_value }}..."
           cargo run --release -p proof-of-secret-script -- --n ${{ steps.calculate_n.outputs.n_value }} --a ${{ inputs.secret_a }} --b ${{ inputs.secret_b }}
@@ -76,7 +76,6 @@ jobs:
         run: |
           # Pastikan PATH sudah benar sebelum menjalankan cargo
           source "$HOME/.cargo/env"
-          source "$HOME/.bashrc"
           
           echo "Converting proof and printing arguments..."
           cargo run --release -p proof-converter-script
