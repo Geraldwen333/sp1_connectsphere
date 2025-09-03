@@ -32,7 +32,7 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      # Langkah 3: Install SP1 Toolchain secara manual (metode paling andal)
+      # Langkah 3: Install SP1 Toolchain secara manual
       - name: Install SP1 Toolchain
         run: |
           echo "Cloning SP1 repository..."
@@ -41,6 +41,10 @@ jobs:
           echo "Installing SP1 CLI..."
           cd ~/sp1/crates/cli
           cargo install --path .
+
+          # --- PERBAIKAN DI SINI ---
+          # Secara eksplisit tambahkan direktori bin Cargo ke PATH untuk sesi ini
+          export PATH="$HOME/.cargo/bin:$PATH"
 
           echo "Verifying cargo prove installation..."
           cargo prove --version
@@ -64,16 +68,13 @@ jobs:
           echo "n_value=$n" >> $GITHUB_OUTPUT
 
       # Langkah 5: Jalankan Prover Script dengan input dari pengguna
-      # Ini adalah langkah yang paling lama
       - name: Run ZK Prover
         run: |
           echo "Starting ZK proof generation for n=${{ steps.calculate_n.outputs.n_value }}..."
           cargo run --release -p proof-of-secret-script -- --n ${{ steps.calculate_n.outputs.n_value }} --a ${{ inputs.secret_a }} --b ${{ inputs.secret_b }}
-        # Tambahkan `timeout-minutes: 30` jika prosesnya sangat lama
-        # timeout-minutes: 30
+        timeout-minutes: 30
 
       # Langkah 6: Jalankan Converter Script untuk mendapatkan output final
-      # Output dari langkah ini adalah yang dibutuhkan oleh pengguna
       - name: Convert Proof to Sui Arguments
         run: |
           echo "Converting proof and printing arguments..."
