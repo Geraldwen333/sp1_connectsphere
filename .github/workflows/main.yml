@@ -30,9 +30,8 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      # --- PERBAIKAN TOTAL DI SINI, MENGIKUTI REFERENSI ANDA ---
-
-      # Langkah 3: Instal SP1 CLI secara manual dari source
+      # Langkah 3: Install SP1 CLI Tools dari Source
+      # Kita masih butuh ini untuk `cargo-prove`
       - name: Install SP1 CLI Tools from Source
         run: |
           echo "Cloning SP1 repository and installing CLI..."
@@ -40,23 +39,22 @@ jobs:
           cd ~/sp1/crates/cli
           cargo install --path .
       
-      # Langkah 4: Ekstrak dan Tautkan Toolchain SP1 secara manual
-      - name: Manually Link SP1 Toolchain
+      # --- INI ADALAH SOLUSI FINAL ---
+      # Langkah 4: Unduh Langsung dan Tautkan Toolchain SP1 (Tanpa sp1up)
+      - name: Download and Link SP1 Toolchain Directly
         run: |
-          # Tambahkan direktori bin Cargo ke PATH secara eksplisit untuk langkah ini
-          export PATH="$HOME/.cargo/bin:$PATH"
+          echo "Downloading SP1 toolchain directly from GitHub releases..."
+          # Membuat direktori untuk menyimpan unduhan
+          mkdir -p ~/.sp1/
+          cd ~/.sp1/
           
-          # Jalankan sp1up sekali untuk memicu unduhan arsip toolchain.
-          # Kita gunakan '|| true' untuk mengabaikan error jika sp1up gagal di tahap lain,
-          # karena kita hanya butuh file yang diunduhnya.
-          echo "Triggering toolchain download..."
-          sp1up || true
+          # Mengunduh file toolchain menggunakan curl dengan URL yang benar
+          curl -L https://github.com/succinctlabs/sp1/releases/download/v1.0.0-testnet/rust-toolchain-x86_64-unknown-linux-gnu.tar.gz -o rust-toolchain.tar.gz
           
-          # Sekarang, lakukan ekstraksi dan penautan manual seperti di panduan referensi
           echo "Manually extracting and linking the downloaded toolchain..."
-          mkdir -p ~/.sp1/toolchains/succinct
-          tar -xvf ~/.sp1/rust-toolchain-x86_64-unknown-linux-gnu.tar.gz -C ~/.sp1/toolchains/succinct --strip-components=1
-          rustup toolchain link succinct ~/.sp1/toolchains/succinct
+          mkdir -p ./toolchains/succinct
+          tar -xvf rust-toolchain.tar.gz -C ./toolchains/succinct --strip-components=1
+          rustup toolchain link succinct ./toolchains/succinct
           
           echo "Toolchain linked successfully."
           # Kembali ke direktori kerja utama
