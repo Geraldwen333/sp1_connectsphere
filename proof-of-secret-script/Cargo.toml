@@ -1,0 +1,12 @@
+[package]
+name = "proof-of-secret-script"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sp1-sdk = { workspace = true }
+hex = "0.4.3"
+clap = { version = "4.5.4", features = ["derive"] }
+
+[build-dependencies]
+sp1-build = { workspace = true }
