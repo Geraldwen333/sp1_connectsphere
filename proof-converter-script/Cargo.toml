@@ -1,0 +1,11 @@
+[package]
+name = "proof-converter-script"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Dependensi di sini hanya untuk membaca dan mengonversi bukti.
+sp1-sdk = "5.0.3"
+sp1-sui = { git = "https://github.com/SoundnessLabs/sp1-sui.git" }
+hex = "0.4.3"
+serde_json = "1.0"

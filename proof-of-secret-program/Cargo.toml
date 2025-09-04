@@ -1,0 +1,8 @@
+[package]
+name = "proof-of-secret-program"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Versi ini sesuai dengan `fibonacci-program`
+sp1-zkvm = "5.0.0"
