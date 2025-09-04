@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+    "proof-of-secret-program",
+    "proof-of-secret-script",
+    # Kita akan tambahkan "proof-converter-script" di sini nanti
+     "proof-converter-script", 
+]
+
+# Definisikan semua dependensi di satu tempat untuk konsistensi
+[workspace.dependencies]
+sp1-sdk = "5.0.3"
+sp1-build = "5.0.0"
+sp1-zkvm = "5.0.0"
